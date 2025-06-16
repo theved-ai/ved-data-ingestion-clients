@@ -1,65 +1,52 @@
-const { app, BrowserWindow, globalShortcut, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
-let win = null;
-
+let win;
 function createWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  const WIDGET_WIDTH = 360, WIDGET_HEIGHT = 70, BALL_SIZE = 60;
-  const SIDE_MARGIN = 16, BOTTOM_MARGIN = 16;
-
-  // Start at bottom right
-  const startX = width - WIDGET_WIDTH - SIDE_MARGIN;
-  const startY = height - WIDGET_HEIGHT - BOTTOM_MARGIN;
-
   win = new BrowserWindow({
-    width: WIDGET_WIDTH,
-    height: WIDGET_HEIGHT,
-    x: startX,
-    y: startY,
-    frame: false,
-    alwaysOnTop: true,
-    resizable: false,
+    width: 420,
+    height: 180,
+    x: undefined, y: undefined,
     transparent: true,
-    skipTaskbar: true,
-    hasShadow: false, // <-- important for clean circle!
+    frame: false,
+    resizable: false,
+    alwaysOnTop: true,
     webPreferences: {
-      contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true
     }
   });
-
   win.loadFile('index.html');
-  win.show();
+  win.setMenu(null);
 
-  ipcMain.on('set-window', (e, { width, height, x, y }) => {
-    if (typeof width === "number" && typeof height === "number") {
-      win.setSize(width, height);
-    }
-    if (typeof x === "number" && typeof y === "number") {
-      win.setPosition(x, y);
+  ipcMain.handle('set-window', (e, opts) => {
+    if (
+      opts &&
+      Number.isFinite(opts.width) &&
+      Number.isFinite(opts.height) &&
+      Number.isFinite(opts.x) &&
+      Number.isFinite(opts.y)
+    ) {
+      win.setBounds({
+        width: Math.round(opts.width),
+        height: Math.round(opts.height),
+        x: Math.round(opts.x),
+        y: Math.round(opts.y)
+      });
+    } else {
+      console.warn('Invalid set-window args:', opts);
     }
   });
+  ipcMain.handle('close-window', () => win.close());
 
-  ipcMain.on('close-window', () => app.quit());
+  // Ctrl+Shift+Space toggles
+  win.webContents.on('before-input-event', (e, input) => {
+    if (input.control && input.shift && input.code === 'Space') {
+      win.webContents.send('toggle-expand');
+      e.preventDefault();
+    }
+  });
 }
 
-app.whenReady().then(() => {
-  createWindow();
-
-  // Global shortcut to toggle expand/collapse and show window if hidden
-  const shortcut = 'Control+Shift+Space';
-  globalShortcut.register(shortcut, () => {
-    if (win) {
-      win.show();
-      win.webContents.send('toggle-expand');
-    }
-  });
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-app.on('will-quit', () => {
-  globalShortcut.unregisterAll();
-});
+app.whenReady().then(createWindow);
+app.on('window-all-closed', ()=>app.quit());

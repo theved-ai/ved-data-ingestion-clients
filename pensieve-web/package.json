@@ -1,0 +1,16 @@
+{
+  "name": "electron-meet-transcriber",
+  "version": "1.0.0",
+  "description": "Proof of concept for meeting transcript recorder using Electron and Whisper",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^29.0.0"
+  },
+  "devDependencies": {},
+  "keywords": ["electron", "transcription", "whisper", "meetings"]
+}
