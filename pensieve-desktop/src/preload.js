@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 // White-listed channels
 const validChannels = {
   send: ['set-window', 'close-window'],
-  receive: ['toggle-expand']
+  receive: ['toggle-widget']
 };
 
 // Expose protected methods to the renderer

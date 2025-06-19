@@ -13,11 +13,18 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+.app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
 /* ORB */
 #orb {
-  position: absolute;
-  bottom: 32px;
-  right: 32px;
+  position: relative; /* For positioning the close button */
   width: 84px;
   height: 84px;
   background: radial-gradient(circle at 60% 35%, #33c4ff 65%, #1ed6bb 100%);
@@ -27,35 +34,43 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: grab;
-  user-select: none;
-  z-index: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  flex-shrink: 0;
 }
+
+#orb:hover {
+  transform: scale(1.05);
+}
+
 #orb-icon {
-  width: 40px;
-  height: 40px;
-  pointer-events: none;
+  font-size: 40px;
   filter: drop-shadow(0 2px 6px #36fff7a0);
 }
+
 #close-orb {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 28px;
-  height: 28px;
+  top: -4px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
   background: #fff;
   color: #14c2bc;
   border: 1.5px solid #18d9a2;
   border-radius: 50%;
-  font-size: 18px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
   cursor: pointer;
   box-shadow: 0 2px 6px #14c2bc22;
-  display: none;
   z-index: 10;
 }
+
 #orb:hover #close-orb {
-  display: block;
+  display: flex;
 }
+
 #close-orb:hover {
   background: #18d9a2;
   color: #fff;
@@ -63,16 +78,16 @@ body {
 
 /* WIDGET */
 #widget {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  width: 360px;
+  position: relative; /* For positioning close buttons */
+  width: 100%;
+  height: 100%;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 24px 20px 16px;
   box-sizing: border-box;
-  z-index: 600;
+  display: flex;
+  flex-direction: column;
 }
 #close-widget {
   position: absolute;

@@ -2,7 +2,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 const validChannels = {
   send: ["set-window", "close-window"],
-  receive: ["toggle-expand"]
+  receive: ["toggle-widget"]
 };
 contextBridge.exposeInMainWorld("electron", {
   // Send message to main process

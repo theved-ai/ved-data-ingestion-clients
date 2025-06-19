@@ -5,17 +5,16 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 app.disableHardwareAcceleration();
-const WINDOW_WIDTH = 400;
-const WINDOW_HEIGHT = 200;
+const ORB_SIZE = { width: 84, height: 84 };
 let mainWindow;
 const createWindow = async () => {
   try {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-    const x = Math.floor((width - WINDOW_WIDTH) / 2);
-    const y = Math.floor((height - WINDOW_HEIGHT) / 2);
+    const x = Math.floor((width - ORB_SIZE.width) / 2);
+    const y = Math.floor((height - ORB_SIZE.height) / 2);
     mainWindow = new BrowserWindow({
-      width: WINDOW_WIDTH,
-      height: WINDOW_HEIGHT,
+      width: ORB_SIZE.width,
+      height: ORB_SIZE.height,
       x,
       y,
       frame: false,
@@ -40,30 +39,26 @@ const createWindow = async () => {
     mainWindow.on("closed", () => {
       mainWindow = null;
     });
-    ipcMain.handle("set-window", (_, { width: width2, height: height2, x: x2, y: y2 }) => {
+    ipcMain.on("set-window", (event, { width: width2, height: height2, x: x2, y: y2, animate = true }) => {
       if (mainWindow) {
-        const bounds = { width: width2, height: height2 };
-        if (x2 !== void 0 && y2 !== void 0) {
-          bounds.x = x2;
-          bounds.y = y2;
-        }
-        mainWindow.setBounds(bounds);
+        const currentBounds = mainWindow.getBounds();
+        const newBounds = {
+          width: width2 !== void 0 ? Math.round(width2) : currentBounds.width,
+          height: height2 !== void 0 ? Math.round(height2) : currentBounds.height,
+          x: x2 !== void 0 ? Math.round(x2) : currentBounds.x,
+          y: y2 !== void 0 ? Math.round(y2) : currentBounds.y
+        };
+        mainWindow.setBounds(newBounds, animate);
       }
     });
-    ipcMain.handle("close-window", () => {
+    ipcMain.on("close-window", () => {
       if (mainWindow) {
         mainWindow.close();
       }
     });
     const { globalShortcut } = require("electron");
-    globalShortcut.register("CommandOrControl+Shift+Space", () => {
-      if (mainWindow) {
-        if (mainWindow.isVisible()) {
-          mainWindow.hide();
-        } else {
-          mainWindow.show();
-        }
-      }
+    globalShortcut.register("CommandOrControl+Shift+P", () => {
+      mainWindow.webContents.send("toggle-widget");
     });
     mainWindow.webContents.on("did-fail-load", (event, errorCode, errorDescription) => {
       console.error("Failed to load:", { errorCode, errorDescription });

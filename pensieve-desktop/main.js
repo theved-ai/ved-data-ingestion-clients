@@ -9,8 +9,8 @@ if (require('electron-squirrel-startup')) {
 // Disable hardware acceleration for transparency to work correctly on some systems.
 app.disableHardwareAcceleration();
 
-const WINDOW_WIDTH = 400;
-const WINDOW_HEIGHT = 200;
+const ORB_SIZE = { width: 84, height: 84 };
+const WIDGET_SIZE = { width: 360, height: 200 };
 
 let mainWindow;
 
@@ -18,13 +18,13 @@ const createWindow = async () => {
   try {
     // Center the window on the primary display.
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-    const x = Math.floor((width - WINDOW_WIDTH) / 2);
-    const y = Math.floor((height - WINDOW_HEIGHT) / 2);
+    const x = Math.floor((width - ORB_SIZE.width) / 2);
+    const y = Math.floor((height - ORB_SIZE.height) / 2);
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
-      width: WINDOW_WIDTH,
-      height: WINDOW_HEIGHT,
+      width: ORB_SIZE.width,
+      height: ORB_SIZE.height,
       x,
       y,
       frame: false,
@@ -57,34 +57,30 @@ const createWindow = async () => {
     });
 
     // Handle window resizing/positioning from renderer
-    ipcMain.handle('set-window', (_, { width, height, x, y }) => {
+    ipcMain.on('set-window', (event, { width, height, x, y, animate = true }) => {
       if (mainWindow) {
-        const bounds = { width, height };
-        if (x !== undefined && y !== undefined) {
-          bounds.x = x;
-          bounds.y = y;
-        }
-        mainWindow.setBounds(bounds);
+        const currentBounds = mainWindow.getBounds();
+        const newBounds = {
+          width: width !== undefined ? Math.round(width) : currentBounds.width,
+          height: height !== undefined ? Math.round(height) : currentBounds.height,
+          x: x !== undefined ? Math.round(x) : currentBounds.x,
+          y: y !== undefined ? Math.round(y) : currentBounds.y,
+        };
+        mainWindow.setBounds(newBounds, animate);
       }
     });
 
     // Handle window close from renderer
-    ipcMain.handle('close-window', () => {
+    ipcMain.on('close-window', () => {
       if (mainWindow) {
         mainWindow.close();
       }
     });
 
-    // Global shortcut to toggle window
+    // Global shortcut to toggle the widget
     const { globalShortcut } = require('electron');
-    globalShortcut.register('CommandOrControl+Shift+Space', () => {
-      if (mainWindow) {
-        if (mainWindow.isVisible()) {
-          mainWindow.hide();
-        } else {
-          mainWindow.show();
-        }
-      }
+    globalShortcut.register('CommandOrControl+Shift+P', () => {
+      mainWindow.webContents.send('toggle-widget');
     });
 
     // Handle any uncaught errors in the renderer process
