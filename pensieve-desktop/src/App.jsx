@@ -22,8 +22,8 @@ function App() {
     const savedPosition = localStorage.getItem('pensieve-position');
     if (savedPosition) {
       try {
-        const { x, y } = JSON.parse(savedPosition);
-        if (pos.x !== undefined && pos.y !== undefined) {
+        const pos = JSON.parse(savedPosition);
+        if (pos && pos.x !== undefined && pos.y !== undefined) {
           setPosition(pos);
           window.electron.send('set-window', { x: pos.x, y: pos.y, animate: false });
         }
