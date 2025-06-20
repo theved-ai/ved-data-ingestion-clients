@@ -5,6 +5,7 @@ function App() {
   const appRef = useRef(null);
   const textareaRef = useRef(null);
   const [isWidgetVisible, setIsWidgetVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [note, setNote] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -66,7 +67,26 @@ function App() {
     }
     dragStartMouse.current = { x: e.screenX, y: e.screenY };
     dragStartPos.current = position;
-    setIsDragging(true);
+    setIsDragging(false); // Start with false, will be set to true on move
+    
+    // Store the initial position for click detection
+    const startX = e.screenX;
+    const startY = e.screenY;
+    
+    const handleMouseMove = (moveEvent) => {
+      // If mouse moves more than 5px, consider it a drag
+      if (Math.abs(moveEvent.screenX - startX) > 5 || Math.abs(moveEvent.screenY - startY) > 5) {
+        setIsDragging(true);
+      }
+    };
+    
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp, { once: true });
   }, [position]);
 
   const handleMouseUp = useCallback((e) => {
@@ -112,52 +132,81 @@ function App() {
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   // Resize window when switching between orb and widget
+  const handleToggleWidget = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setIsWidgetVisible(prev => !prev);
+      setIsAnimating(false);
+    }, 200); // Animation duration
+  };
+
+  // Resize window when switching between orb and widget
   useEffect(() => {
     const { width, height } = isWidgetVisible
       ? { width: 360, height: 200 }
       : { width: 84, height: 84 };
-    window.electron.send('set-window', { width, height });
+    window.electron.send('set-window', { width, height, animate: true });
   }, [isWidgetVisible]);
 
-  const Orb = () => (
-    <div id="orb">
-      <div id="orb-icon">✨</div>
-      <button id="close-orb" onClick={(e) => { e.stopPropagation(); handleClose(); }}>×</button>
-    </div>
-  );
-
-  const Widget = () => (
-    <div id="widget">
-      <button id="close-widget" onClick={() => setIsWidgetVisible(false)}>—</button>
-      <button id="close-app" onClick={handleClose}>×</button>
-      <div id="widget-content">
-        <div className="input-container">
-          <textarea
-            ref={textareaRef}
-            id="note-input"
-            placeholder="Type your note here..."
-            value={note}
-            onChange={handleNoteChange}
-          />
-          <button id="send-btn" onClick={handleSend} disabled={!note.trim()}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const handleClick = useCallback((e) => {
+    // Only toggle if not dragging and not clicking on interactive elements
+    if (!isWidgetVisible && !isAnimating && !isDragging && !e.target.closest('button, textarea')) {
+      handleToggleWidget();
+    }
+  }, [isWidgetVisible, isAnimating, isDragging, handleToggleWidget]);
 
   return (
     <div 
       className="app-container" 
       onMouseDown={handleMouseDown}
-      onClick={() => !isWidgetVisible && setIsWidgetVisible(true)}
+      onClick={handleClick}
     >
-      {isWidgetVisible ? <Widget /> : <Orb />}
+      {isWidgetVisible ? (
+        <Widget 
+          note={note} 
+          handleNoteChange={handleNoteChange} 
+          handleSend={handleSend} 
+          handleClose={handleClose} 
+          setIsWidgetVisible={setIsWidgetVisible} 
+          textareaRef={textareaRef} 
+          isAnimating={isAnimating}
+          onToggle={handleToggleWidget}
+        />
+      ) : (
+        <Orb handleClose={handleClose} isAnimating={isAnimating} />
+      )}
     </div>
   );
 }
+
+const Orb = ({ handleClose, isAnimating }) => (
+  <div id="orb" className={isAnimating ? 'shrink-out' : 'expand-in'}>
+    <div id="orb-icon">✨</div>
+    <button id="close-orb" onClick={(e) => { e.stopPropagation(); handleClose(); }}>×</button>
+  </div>
+);
+
+const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef }) => (
+  <div id="widget" className={isAnimating ? 'shrink-out' : 'expand-in'}>
+    <button id="close-widget" onClick={onToggle}>—</button>
+    <button id="close-app" onClick={handleClose}>X</button>
+    <div id="widget-content">
+      <div className="input-container">
+        <textarea
+          ref={textareaRef}
+          id="note-input"
+          placeholder="Type your note here..."
+          value={note}
+          onChange={handleNoteChange}
+        />
+        <button id="send-btn" onClick={handleSend} disabled={!note.trim()}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 export default App;
