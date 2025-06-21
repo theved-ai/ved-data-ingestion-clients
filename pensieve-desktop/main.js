@@ -28,8 +28,9 @@ const createWindow = async () => {
       x,
       y,
       frame: false,
-      resizable: true,
+      resizable: false,
       transparent: true,
+      hasShadow: false,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,

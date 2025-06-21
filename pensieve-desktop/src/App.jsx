@@ -147,13 +147,13 @@ function App() {
       setNote('');
       setSubmitStatus({ 
         type: 'success', 
-        message: 'Note saved successfully!' 
+        message: 'Message sent successfully!' 
       });
     } catch (error) {
       console.error('Error submitting note:', error);
       setSubmitStatus({ 
         type: 'error', 
-        message: 'Failed to save note. Please try again.' 
+        message: 'Failed to send message. Please try again.' 
       });
     } finally {
       setIsSubmitting(false);
