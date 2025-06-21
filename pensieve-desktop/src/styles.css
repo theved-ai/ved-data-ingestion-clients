@@ -55,8 +55,8 @@ body {
 
 #close-orb {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 0px;
+  right: 0px;
   width: 24px;
   height: 24px;
   background: #fff;
@@ -92,7 +92,7 @@ body {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  /* padding: 16px; */
+  padding: 16px;
   gap: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, box-shadow;
@@ -134,8 +134,7 @@ body {
   font-size: 1rem;
   line-height: 1.4;
   color: #1c1e21;
-  min-height: 180px;
-  /* max-height: 140px; */
+  height: 130px; /* Adjusted height to fit within padded widget */
   outline: none;
   font-family: "Inter", sans-serif;
 }
@@ -273,33 +272,42 @@ textarea:disabled {
 /* ANIMATIONS */
 @keyframes expand-in {
   0% {
-    transform: scale(0.9);
+    transform: scale(0.8) translateY(20px);
     opacity: 0;
+    filter: blur(4px);
+  }
+  50% {
+    transform: scale(1.03) translateY(-5px);
+    filter: blur(0);
   }
   100% {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
-    opacity: 1;
+    filter: blur(0);
   }
 }
 
 @keyframes shrink-out {
   0% {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
+    filter: blur(0);
   }
   100% {
-    transform: scale(0.9);
+    transform: scale(0.8) translateY(20px);
     opacity: 0;
+    filter: blur(4px);
   }
 }
 
 .expand-in {
-  animation: expand-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation: expand-in 0.5s cubic-bezier(0.36, 0.66, 0.04, 1) both;
+  transform-origin: bottom right;
 }
 
 .shrink-out {
-  animation: shrink-out 0.25s cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+  animation: shrink-out 0.3s cubic-bezier(0.36, 0.66, 0.04, 1) both;
+  transform-origin: bottom right;
 }
 
 /* Smooth transitions for position changes */
