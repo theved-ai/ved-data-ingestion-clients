@@ -10,13 +10,13 @@
   height: 100%;
   object-fit: contain;
   border-radius: 50%;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 #close-orb {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -0px;
+  right: -0px;
   background: red;
   color: white;
   border: none;

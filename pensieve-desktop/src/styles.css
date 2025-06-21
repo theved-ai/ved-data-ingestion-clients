@@ -28,7 +28,7 @@ body {
   position: relative; /* For positioning the close button */
   width: 84px;
   height: 84px;
-  background: radial-gradient(circle at 60% 35%, #33c4ff 65%, #1ed6bb 100%);
+  /* background: radial-gradient(circle at 60% 35%, #33c4ff 65%, #1ed6bb 100%); */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -50,21 +50,22 @@ body {
 }
 
 #orb-icon {
-  width: 40px;
-  height: 40px;
-  background-image: url('../assets/feather.svg');
+  width: 86px;
+  height: 86px;
+  transform: scale(1.8);
+  background-image: url("../src/assets/orb.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  filter: drop-shadow(0 2px 6px #36fff7a0);
+  /* filter: drop-shadow(0 2px 6px #36fff7a0); */
 }
 
 #close-orb {
   position: absolute;
-  top: 0px;
-  right: 0px;
-  width: 24px;
-  height: 24px;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
   background: #fff;
   color: #14c2bc;
   border: 1.5px solid #18d9a2;
@@ -83,7 +84,7 @@ body {
 }
 
 #close-orb:hover {
-  background: #18d9a2;
+  background: darkred;
   color: #fff;
 }
 
@@ -159,11 +160,11 @@ body {
 
 /* SEND BUTTON */
 #send-btn {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 40px;
   background: #2270f8;
   border: none;
-  border-radius: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
