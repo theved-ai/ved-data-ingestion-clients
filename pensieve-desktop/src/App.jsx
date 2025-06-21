@@ -379,7 +379,7 @@ function App() {
 
 const Orb = ({ handleClose, isAnimating }) => (
   <div id="orb" className={isAnimating ? 'shrink-out' : 'expand-in'}>
-    <div id="orb-icon">✨</div>
+    <div id="orb-icon"></div>
     <button id="close-orb" onClick={(e) => { e.stopPropagation(); handleClose(); }}>×</button>
   </div>
 );
