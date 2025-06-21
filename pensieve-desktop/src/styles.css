@@ -55,8 +55,8 @@ body {
 
 #close-orb {
   position: absolute;
-  top: 0px;
-  right: 0px;
+  top: -4px;
+  right: -4px;
   width: 24px;
   height: 24px;
   background: #fff;
@@ -117,7 +117,7 @@ body {
 /* CONTENT */
 .input-container {
   display: flex;
-  align-items: center;
+  align-items: end;
   gap: 12px;
   padding: 8px;
   border-radius: 18px;
@@ -255,8 +255,8 @@ textarea:disabled {
 
 #close-app {
   position: absolute;
-  top: 36px;
-  right: 18px;
+  top: 24px;
+  right: 24px;
   background: transparent;
   border: none;
   font-size: 20px;

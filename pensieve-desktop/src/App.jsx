@@ -33,7 +33,7 @@ function App() {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  },[]);
   
   const [position, setPosition] = useState(defaultPosition.current);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -342,17 +342,7 @@ const Orb = ({ handleClose, isAnimating }) => (
   </div>
 );
 
-const Widget = ({ 
-  note, 
-  handleNoteChange, 
-  handleSend, 
-  handleClose, 
-  onToggle, 
-  isAnimating, 
-  textareaRef, 
-  isSubmitting, 
-  submitStatus = { type: null, message: '' } 
-}) => {
+const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef, isSubmitting, submitStatus }) => {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && e.metaKey) {
       handleSend();
@@ -361,14 +351,13 @@ const Widget = ({
 
   return (
     <div id="widget" className={isAnimating ? 'shrink-out' : 'expand-in'}>
-      <button id="close-widget" onClick={onToggle} disabled={isSubmitting}>—</button>
-      <button id="close-app" onClick={handleClose} disabled={isSubmitting}>X</button>
+      <button id="close-app" onClick={handleClose} disabled={isSubmitting}>x</button>
       <div id="widget-content">
         <div className="input-container">
           <textarea
             ref={textareaRef}
             id="note-input"
-            placeholder="Type your note here... (Cmd+Enter to send)"
+            placeholder="Jot down your thoughts..."
             value={note}
             onChange={handleNoteChange}
             onKeyDown={handleKeyDown}
