@@ -103,8 +103,8 @@ body {
 }
 #close-widget {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 16px; /* Slightly more space from the top */
+  right: 16px; /* Slightly more space from the right */
   background: transparent;
   border: none;
   font-size: 20px;
@@ -112,6 +112,7 @@ body {
   cursor: pointer;
   transition: color 0.2s;
   display: block;
+  z-index: 1; /* Ensure it's above the textarea */
 }
 #close-widget:hover {
   color: #333;
@@ -140,6 +141,9 @@ body {
 .button-row {
   display: flex;
   justify-content: flex-end; /* Align button to the right */
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 #note-input {
@@ -147,16 +151,32 @@ body {
   border: none;
   background: transparent;
   resize: none;
-  padding: 12px;
-  padding-right: 16px;
+  padding: 4px 16px 8px 16px; /* More padding at the top, less at the bottom */
+  margin-top: 8px; /* Add space between the close button and the text */
   font-size: 1rem;
-  line-height: 1.4;
+  line-height: 1.5; /* Slightly more line height for better readability */
   color: #1c1e21;
   outline: none;
   font-family: inherit;
   overflow-y: auto; /* Show scrollbar when content exceeds max-height */
   box-sizing: border-box;
   flex-grow: 1; /* Allow the textarea to grow */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* For Firefox */
+}
+
+/* Webkit scrollbar styling */
+#note-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+#note-input::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+#note-input::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 #note-input::placeholder {
@@ -228,14 +248,17 @@ body {
 
 /* Status message */
 .status-message {
-  margin-top: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  text-align: center;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
   opacity: 0;
   animation: fadeIn 0.3s ease-out forwards;
   transition: all 0.3s ease;
+  white-space: normal;
+  word-break: break-word;
+  flex: 1;
+  margin-right: 8px;
+  text-align: center;
 }
 
 .status-message.success {

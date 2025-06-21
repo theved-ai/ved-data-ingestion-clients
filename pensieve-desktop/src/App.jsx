@@ -396,6 +396,11 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
             disabled={isSubmitting}
           />
           <div className="button-row">
+            {submitStatus.message && (
+              <div className={`status-message ${submitStatus.type}`}>
+                {submitStatus.message}
+              </div>
+            )}
             <button 
               id="send-btn" 
               onClick={handleSend} 
@@ -410,11 +415,6 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
             </button>
           </div>
         </div>
-        {submitStatus.message && (
-          <div className={`status-message ${submitStatus.type}`}>
-            {submitStatus.message}
-          </div>
-        )}
       </div>
     </div>
   );
