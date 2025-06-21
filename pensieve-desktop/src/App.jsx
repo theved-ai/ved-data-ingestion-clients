@@ -119,10 +119,6 @@ function App() {
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
-    // Auto-resize the textarea
-    const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
   };
 
   const handleSend = async () => {
@@ -258,7 +254,7 @@ function App() {
       
       // Animate back to default position
       const startTime = performance.now();
-      const duration = 300; // ms
+      const duration = 150; // ms - Reduced from 300ms for faster animation
       
       const animate = (currentTime) => {
         const elapsed = currentTime - startTime;
@@ -399,18 +395,20 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
             onKeyDown={handleKeyDown}
             disabled={isSubmitting}
           />
-          <button 
-            id="send-btn" 
-            onClick={handleSend} 
-            disabled={!note.trim() || isSubmitting}
-            className={isSubmitting ? 'sending' : ''}
-          >
-            {isSubmitting ? (
-              <div className="spinner"></div>
-            ) : (
-              <img src="../src/assets/forward-arrow.svg" alt="Send" />
-            )}
-          </button>
+          <div className="button-row">
+            <button 
+              id="send-btn" 
+              onClick={handleSend} 
+              disabled={!note.trim() || isSubmitting}
+              className={isSubmitting ? 'sending' : ''}
+            >
+              {isSubmitting ? (
+                <div className="spinner"></div>
+              ) : (
+               <img src="../src/assets/forward-arrow.svg" alt="" />
+              )}
+            </button>
+          </div>
         </div>
         {submitStatus.message && (
           <div className={`status-message ${submitStatus.type}`}>

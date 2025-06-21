@@ -70,17 +70,13 @@ body {
   color: #14c2bc;
   border: 1.5px solid #18d9a2;
   border-radius: 50%;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   cursor: pointer;
   box-shadow: 0 2px 6px #14c2bc22;
   z-index: 10;
-}
-
-#orb:hover #close-orb {
-  display: flex;
 }
 
 #close-orb:hover {
@@ -122,13 +118,28 @@ body {
 }
 
 /* CONTENT */
+#widget-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent content from overflowing the widget */
+  justify-content: space-between; /* Push button to the bottom */
+}
+
 .input-container {
   display: flex;
-  align-items: end;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 8px;
   border-radius: 18px;
   background: #f0f2f5;
+  flex-grow: 1; /* Allow the container to grow */
+  overflow: hidden; /* Hide overflow */
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-end; /* Align button to the right */
 }
 
 #note-input {
@@ -137,16 +148,15 @@ body {
   background: transparent;
   resize: none;
   padding: 12px;
+  padding-right: 16px;
   font-size: 1rem;
   line-height: 1.4;
   color: #1c1e21;
-  min-height: 140px; /* Starting height */
-  max-height: 200px; /* Maximum height before scrolling */
   outline: none;
   font-family: inherit;
   overflow-y: auto; /* Show scrollbar when content exceeds max-height */
-  transition: height 0.2s ease-out;
   box-sizing: border-box;
+  flex-grow: 1; /* Allow the textarea to grow */
 }
 
 #note-input::placeholder {
@@ -160,11 +170,11 @@ body {
 
 /* SEND BUTTON */
 #send-btn {
-  width: 42px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: #2270f8;
   border: none;
-  border-radius: 50%;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -173,6 +183,8 @@ body {
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  padding: 0 16px;
+  color: white;
 }
 
 #send-btn:hover:not(:disabled) {
@@ -265,8 +277,8 @@ textarea:disabled {
 
 #close-app {
   position: absolute;
-  top: 16px;
-  right: 22px;
+  top: 8px;
+  right: 14px;
   background: transparent;
   border: none;
   font-size: 20px;
@@ -275,6 +287,7 @@ textarea:disabled {
   transition: color 0.2s;
   display: block;
 }
+
 #close-app:hover {
   color: #333;
 }
