@@ -8,6 +8,7 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [note, setNote] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState({ type: null, message: '' });
   const submitTimeoutRef = useRef(null);
@@ -41,6 +42,32 @@ function App() {
   const dragStartMouse = useRef({ x: 0, y: 0 });
   const animationFrameRef = useRef(null);
 
+  const animate = (start, end, onComplete) => {
+    const duration = 200; // ms
+    let startTime = null;
+
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const t = Math.min(progress / duration, 1);
+
+      const newPos = {
+        x: start.x + (end.x - start.x) * t,
+        y: start.y + (end.y - start.y) * t,
+      };
+
+      setPosition(newPos);
+
+      if (progress < duration) {
+        animationFrameRef.current = requestAnimationFrame(step);
+      } else {
+        onComplete?.();
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(step);
+  };
+
   // Load saved note and position from localStorage, and set initial window position
   useEffect(() => {
     const savedNote = localStorage.getItem('pensieve-note');
@@ -60,11 +87,7 @@ function App() {
             y: Math.round((screenSize.height - 200) / 2),
           });
         } else { // If widget is visible, we are closing it to show the orb
-          // Reset orb position to bottom-right
-          setPosition({
-            x: screenSize.width - 84 - 24,
-            y: screenSize.height - 84 - 24,
-          });
+          setIsReturning(true);
         }
         return !prev;
       });
@@ -81,6 +104,17 @@ function App() {
       localStorage.setItem('pensieve-note', note);
     }
   }, [note]);
+
+  // Animate orb returning to corner
+  useEffect(() => {
+    if (isReturning) {
+      const targetX = screenSize.width - 84 - 24;
+      const targetY = screenSize.height - 84 - 24;
+      animate(position, { x: targetX, y: targetY }, () => {
+        setIsReturning(false);
+      });
+    }
+  }, [isReturning, screenSize]);
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
@@ -140,7 +174,7 @@ function App() {
 
   const handleMouseDown = useCallback((e) => {
     // Prevent dragging on interactive elements
-    if (e.target.closest('button, textarea')) {
+    if (e.target.closest('button, textarea') || isReturning) {
       return;
     }
     dragStartMouse.current = { x: e.screenX, y: e.screenY };
