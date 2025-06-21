@@ -80,6 +80,10 @@ function App() {
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
+    // Auto-resize the textarea
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
   };
 
   const handleSend = async () => {

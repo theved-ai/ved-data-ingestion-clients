@@ -92,7 +92,7 @@ body {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  /* padding: 16px; */
   gap: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, box-shadow;
@@ -125,18 +125,21 @@ body {
 }
 
 #note-input {
-  flex: 1;
+  width: 100%;
   border: none;
   background: transparent;
   resize: none;
-  padding: 0;
-  margin: 0;
+  padding: 12px;
   font-size: 1rem;
   line-height: 1.4;
   color: #1c1e21;
-  height: 130px; /* Adjusted height to fit within padded widget */
+  min-height: 140px; /* Starting height */
+  max-height: 200px; /* Maximum height before scrolling */
   outline: none;
   font-family: "Inter", sans-serif;
+  overflow-y: auto; /* Show scrollbar when content exceeds max-height */
+  transition: height 0.2s ease-out;
+  box-sizing: border-box;
 }
 
 #note-input::placeholder {
@@ -255,8 +258,8 @@ textarea:disabled {
 
 #close-app {
   position: absolute;
-  top: 24px;
-  right: 24px;
+  top: 12px;
+  right: 12px;
   background: transparent;
   border: none;
   font-size: 20px;
