@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './styles.css';
+import Orb from './orb';
 
 function App() {
   const appRef = useRef(null);
@@ -376,13 +377,6 @@ function App() {
     </div>
   );
 }
-
-const Orb = ({ handleClose, isAnimating }) => (
-  <div id="orb" className={isAnimating ? 'shrink-out' : 'expand-in'}>
-    <div id="orb-icon"></div>
-    <button id="close-orb" onClick={(e) => { e.stopPropagation(); handleClose(); }}>×</button>
-  </div>
-);
 
 const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef, isSubmitting, submitStatus }) => {
   const handleKeyDown = (e) => {
