@@ -17,9 +17,9 @@ function App() {
     height: window.screen.availHeight
   });
 
-  const defaultPosition = useRef({ 
-    x: screenSize.width - 384, // 360px (widget width) + 24px margin
-    y: screenSize.height - 300  // 200px (widget height) + 100px margin
+  const defaultPosition = useRef({
+    x: screenSize.width - 84 - 24, // 84px orb width + 24px margin
+    y: screenSize.height - 84 - 24  // 84px orb height + 24px margin
   });
   
   // Update screen size on resize
@@ -48,22 +48,26 @@ function App() {
       setNote(savedNote);
     }
 
-    const savedPosition = localStorage.getItem('pensieve-position');
-    if (savedPosition) {
-      try {
-        const pos = JSON.parse(savedPosition);
-        if (pos && pos.x !== undefined && pos.y !== undefined) {
-          setPosition(pos);
-          window.electron.send('set-window', { x: pos.x, y: pos.y, animate: false });
-        }
-      } catch (e) {
-        console.error('Failed to load position:', e);
-      }
-    }
+
 
     // Set up IPC listeners
     const cleanup = window.electron?.receive('toggle-widget', () => {
-      setIsWidgetVisible(prev => !prev);
+      setIsWidgetVisible(prev => {
+        if (!prev) { // If orb is visible, we are opening the widget
+          // Center the widget
+          setPosition({
+            x: Math.round((screenSize.width - 360) / 2),
+            y: Math.round((screenSize.height - 200) / 2),
+          });
+        } else { // If widget is visible, we are closing it to show the orb
+          // Reset orb position to bottom-right
+          setPosition({
+            x: screenSize.width - 84 - 24,
+            y: screenSize.height - 84 - 24,
+          });
+        }
+        return !prev;
+      });
     });
 
     return () => {
