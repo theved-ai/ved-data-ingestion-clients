@@ -44,7 +44,7 @@ function App() {
   const animationFrameRef = useRef(null);
 
   const animate = (start, end, onComplete) => {
-    const duration = 200; // ms
+    const duration = 50; // Reduced from 200ms to 100ms for faster animation
     let startTime = null;
 
     const step = (timestamp) => {
@@ -376,8 +376,18 @@ function App() {
 
 const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef, isSubmitting, submitStatus }) => {
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && e.metaKey) {
-      handleSend();
+    if (e.key === 'Enter') {
+      if (!e.shiftKey) {
+        e.preventDefault(); // Prevent newline when pressing Enter alone
+        if (e.metaKey || e.ctrlKey) {
+          // Keep the existing Cmd+Enter functionality
+          handleSend();
+        } else if (note.trim()) {
+          // Send on Enter (without modifier keys) only if there's content
+          handleSend();
+        }
+      }
+      // Allow Shift+Enter for newlines
     }
   };
 
@@ -398,7 +408,7 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
           <div className="button-row">
             {submitStatus.message && (
               <div className={`status-message ${submitStatus.type}`}>
-                {submitStatus.message}
+                <span>{submitStatus.message}</span>
               </div>
             )}
             <button 
