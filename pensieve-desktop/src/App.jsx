@@ -359,7 +359,11 @@ const Widget = ({
           />
           <div className="button-row">
             {submitStatus.message && (
-              <div className={`status-message ${submitStatus.type}`}>
+              <div
+                className={`status-message ${submitStatus.type} ${
+                  submitStatus.message.length > 40 ? "marquee" : ""
+                }`}
+              >
                 <span>{submitStatus.message}</span>
               </div>
             )}
