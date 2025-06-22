@@ -44,31 +44,7 @@ function App() {
   const dragStartMouse = useRef({ x: 0, y: 0 });
   const animationFrameRef = useRef(null);
 
-  const animate = (start, end, onComplete) => {
-    const duration = 50; // Reduced from 200ms to 100ms for faster animation
-    let startTime = null;
 
-    const step = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      const progress = timestamp - startTime;
-      const t = Math.min(progress / duration, 1);
-
-      const newPos = {
-        x: start.x + (end.x - start.x) * t,
-        y: start.y + (end.y - start.y) * t,
-      };
-
-      setPosition(newPos);
-
-      if (progress < duration) {
-        animationFrameRef.current = requestAnimationFrame(step);
-      } else {
-        onComplete?.();
-      }
-    };
-
-    animationFrameRef.current = requestAnimationFrame(step);
-  };
 
   // Load saved note and position from localStorage, and set initial window position
   useEffect(() => {
@@ -112,9 +88,10 @@ function App() {
     if (isReturning) {
       const targetX = screenSize.width - 84 - 24;
       const targetY = screenSize.height - 84 - 24;
-      animate(position, { x: targetX, y: targetY }, () => {
+      setPosition({ x: targetX, y: targetY });
+      setTimeout(() => {
         setIsReturning(false);
-      });
+      }, 50);
     }
   }, [isReturning, screenSize]);
 
@@ -291,33 +268,20 @@ function App() {
     }
   }, [isWidgetVisible, position]);
 
-  // Handle window resize when toggling between widget and orb or expanding
+  // Update window position and size
   useEffect(() => {
     if (isWidgetVisible) {
-      // When showing widget, ensure it's fully visible on screen
-      const widgetWidth = isExpanded ? 500 : 360;
-      const widgetHeight = isExpanded ? 400 : 200;
-      
-      const maxX = screenSize.width - widgetWidth;
-      const maxY = screenSize.height - widgetHeight;
-      
-      const newX = Math.min(Math.max(0, position.x), maxX);
-      const newY = Math.min(Math.max(0, position.y), maxY);
-      
-      // Update position if it was adjusted
-      if (newX !== position.x || newY !== position.y) {
-        setPosition({ x: newX, y: newY });
-      }
-      
-      window.electron.send('set-window', { 
-        width: widgetWidth, 
-        height: widgetHeight,
-        x: newX,
-        y: newY,
-        animate: true 
+      const width = isExpanded ? 600 : 360;
+      const height = isExpanded ? 400 : 200;
+      window.electron.send('set-window', {
+        width,
+        height,
+        x: Math.round((screenSize.width - width) / 2),
+        y: Math.round((screenSize.height - height) / 2),
+        animate: !isReturning
       });
     } else {
-      // When showing orb, set its size and ensure it's fully visible
+      // Orb is visible
       const maxX = screenSize.width - 84; // Orb width
       const maxY = screenSize.height - 84; // Orb height
       
@@ -329,22 +293,10 @@ function App() {
         height: 84,
         x: newX,
         y: newY,
-        animate: true 
+        animate: !isReturning
       });
     }
-  }, [isWidgetVisible, isExpanded, position, screenSize]);
-  
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [isWidgetVisible, isExpanded, position, screenSize, isReturning]);
 
   const handleClick = useCallback((e) => {
     // Only toggle if not dragging and not clicking on interactive elements
