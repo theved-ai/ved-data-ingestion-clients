@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import './styles.css';
-import Orb from './orb';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import "./styles.css";
+import Orb from "./orb";
 
 function App() {
   const appRef = useRef(null);
@@ -8,21 +8,21 @@ function App() {
   const [isWidgetVisible, setIsWidgetVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState({ type: null, message: '' });
+  const [submitStatus, setSubmitStatus] = useState({ type: null, message: "" });
   const submitTimeoutRef = useRef(null);
   // Default position is bottom-right of the screen with some margin
   const [screenSize, setScreenSize] = useState({
     width: window.screen.availWidth,
-    height: window.screen.availHeight
+    height: window.screen.availHeight,
   });
 
   const defaultPosition = useRef({
     x: screenSize.width - 84 - 24, // 84px orb width + 24px margin
-    y: screenSize.height - 84 - 24  // 84px orb height + 24px margin
+    y: screenSize.height - 84 - 24, // 84px orb height + 24px margin
   });
 
   // Update screen size on resize
@@ -30,13 +30,13 @@ function App() {
     const handleResize = () => {
       setScreenSize({
         width: window.screen.availWidth,
-        height: window.screen.availHeight
+        height: window.screen.availHeight,
       });
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  },[]);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [position, setPosition] = useState(defaultPosition.current);
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -45,14 +45,14 @@ function App() {
 
   // Load saved note and position from localStorage, and set initial window position
   useEffect(() => {
-    const savedNote = localStorage.getItem('pensieve-note');
+    const savedNote = localStorage.getItem("pensieve-note");
     if (savedNote) {
       setNote(savedNote);
     }
 
     // Set up IPC listeners
-    const cleanup = window.electron?.receive('toggle-widget', () => {
-        handleToggleWidget();
+    const cleanup = window.electron?.receive("toggle-widget", () => {
+      handleToggleWidget();
     });
 
     return () => {
@@ -62,8 +62,8 @@ function App() {
 
   // Save note to localStorage when it changes
   useEffect(() => {
-    if (note !== '') {
-      localStorage.setItem('pensieve-note', note);
+    if (note !== "") {
+      localStorage.setItem("pensieve-note", note);
     }
   }, [note]);
 
@@ -88,35 +88,35 @@ function App() {
     if (!note.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
+    setSubmitStatus({ type: null, message: "" });
 
     try {
       // TODO: Replace with actual API endpoint
-      const response = await fetch('https://api.example.com/v1/ingest', {
-        method: 'POST',
+      const response = await fetch("https://api.example.com/v1/ingest", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user_id: 'user-123', // TODO: Replace with actual user ID
-          data_source: 'user_typed',
-          content: note.trim()
-        })
+          user_id: "user-123", // TODO: Replace with actual user ID
+          data_source: "user_typed",
+          content: note.trim(),
+        }),
       });
 
-      if (!response.ok) throw new Error('Failed to submit note');
+      if (!response.ok) throw new Error("Failed to submit note");
 
       // Success
-      setNote('');
+      setNote("");
       setSubmitStatus({
-        type: 'success',
-        message: 'Message sent successfully!'
+        type: "success",
+        message: "Message sent successfully!",
       });
     } catch (error) {
-      console.error('Error submitting note:', error);
+      console.error("Error submitting note:", error);
       setSubmitStatus({
-        type: 'error',
-        message: 'Failed to send. Please try again.'
+        type: "error",
+        message: "Failed to send. Please try again.",
       });
     } finally {
       // Hide the status message after 3 seconds
@@ -124,54 +124,91 @@ function App() {
         clearTimeout(submitTimeoutRef.current);
       }
       submitTimeoutRef.current = setTimeout(() => {
-        setSubmitStatus({ type: null, message: '' });
+        setSubmitStatus({ type: null, message: "" });
       }, 3000);
       setIsSubmitting(false);
     }
   };
 
-  const handleMouseDown = useCallback((e) => {
-    // Prevent dragging on interactive elements or when widget is visible
-    if (e.target.closest('button, textarea') || isWidgetVisible) {
-      return;
-    }
-    dragStartMouse.current = { x: e.screenX, y: e.screenY };
-    dragStartPos.current = position;
+  const handleToggleWidget = useCallback(() => {
+    // Prevent toggling while dragging
+    if (isDragging) return;
 
-    let moved = false;
+    setIsWidgetVisible((prev) => {
+      if (!prev) {
+        // If orb is visible, we are opening the widget
+        // Center the widget
+        setPosition({
+          x: Math.round((screenSize.width - 360) / 2),
+          y: Math.round((screenSize.height - 200) / 2),
+        });
+      } else {
+        // If widget is visible, we are closing it to show the orb
+        setIsReturning(true);
+      }
+      return !prev;
+    });
+  }, [screenSize, isDragging]);
 
-    const handleMouseMove = (moveEvent) => {
+  const handleMouseDown = useCallback(
+    (e) => {
+      // Prevent dragging on interactive elements or when widget is visible
+      if (e.target.closest("button, textarea") || isWidgetVisible) {
+        return;
+      }
+      dragStartMouse.current = { x: e.screenX, y: e.screenY };
+      dragStartPos.current = position;
+
+      let moved = false;
+      let wasDragged = false;
+
+      const handleMouseMove = (moveEvent) => {
         if (!moved) {
-            const dx = moveEvent.screenX - dragStartMouse.current.x;
-            const dy = moveEvent.screenY - dragStartMouse.current.y;
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                moved = true;
-                setIsDragging(true);
-            }
+          const dx = moveEvent.screenX - dragStartMouse.current.x;
+          const dy = moveEvent.screenY - dragStartMouse.current.y;
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            moved = true;
+            wasDragged = true;
+            setIsDragging(true);
+          }
         }
 
         if (moved) {
-            const newPos = {
-                x: dragStartPos.current.x + (moveEvent.screenX - dragStartMouse.current.x),
-                y: dragStartPos.current.y + (moveEvent.screenY - dragStartMouse.current.y),
-            };
-            setPosition(newPos);
+          const newPos = {
+            x:
+              dragStartPos.current.x +
+              (moveEvent.screenX - dragStartMouse.current.x),
+            y:
+              dragStartPos.current.y +
+              (moveEvent.screenY - dragStartMouse.current.y),
+          };
+          setPosition(newPos);
         }
-    };
+      };
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      if (moved) {
-          // Use a timeout to differentiate from a click
+      const handleMouseUp = () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+
+        if (wasDragged) {
+          // If the orb was dragged, open the widget after a small delay
+          setTimeout(() => {
+            setIsDragging(false);
+            if (!isWidgetVisible) {
+              handleToggleWidget();
+            }
+          }, 10);
+        } else {
+          // If it was just a click, handle normally
           setTimeout(() => setIsDragging(false), 0);
-      }
-    };
+        }
+      };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [position, isWidgetVisible]);
-
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [position, isWidgetVisible, handleToggleWidget]
+  );
 
   const handleClose = useCallback(() => {
     if (window.electron) {
@@ -179,35 +216,17 @@ function App() {
     }
   }, []);
 
-  const handleToggleWidget = useCallback(() => {
-    // Prevent toggling while dragging
-    if (isDragging) return;
-
-    setIsWidgetVisible(prev => {
-      if (!prev) { // If orb is visible, we are opening the widget
-        // Center the widget
-        setPosition({
-          x: Math.round((screenSize.width - 360) / 2),
-          y: Math.round((screenSize.height - 200) / 2),
-        });
-      } else { // If widget is visible, we are closing it to show the orb
-        setIsReturning(true);
-      }
-      return !prev;
-    });
-  }, [screenSize, isDragging]);
-
   // Update window position and size
   useEffect(() => {
     if (isWidgetVisible) {
       const width = isExpanded ? 600 : 360;
       const height = isExpanded ? 400 : 200;
-      window.electron.send('set-window', {
+      window.electron.send("set-window", {
         width,
         height,
         x: Math.round((screenSize.width - width) / 2),
         y: Math.round((screenSize.height - height) / 2),
-        animate: true // Animate widget open
+        animate: true, // Animate widget open
       });
     } else {
       // Orb is visible
@@ -217,15 +236,22 @@ function App() {
       const newX = Math.min(Math.max(0, position.x), maxX);
       const newY = Math.min(Math.max(0, position.y), maxY);
 
-      window.electron.send('set-window', {
+      window.electron.send("set-window", {
         width: 84,
         height: 84,
         x: newX,
         y: newY,
-        animate: !isReturning && !isDragging // No animation when returning or dragging
+        animate: !isReturning && !isDragging, // No animation when returning or dragging
       });
     }
-  }, [isWidgetVisible, isExpanded, position, screenSize, isReturning, isDragging]);
+  }, [
+    isWidgetVisible,
+    isExpanded,
+    position,
+    screenSize,
+    isReturning,
+    isDragging,
+  ]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -239,12 +265,19 @@ function App() {
     };
   }, []);
 
-  const handleClick = useCallback((e) => {
-    // Only toggle if not dragging and not clicking on interactive elements
-    if (!isDragging && !isWidgetVisible && !e.target.closest('button, textarea')) {
-      handleToggleWidget();
-    }
-  }, [isDragging, isWidgetVisible, handleToggleWidget]);
+  const handleClick = useCallback(
+    (e) => {
+      // Only toggle if not dragging and not clicking on interactive elements
+      if (
+        !isDragging &&
+        !isWidgetVisible &&
+        !e.target.closest("button, textarea")
+      ) {
+        handleToggleWidget();
+      }
+    },
+    [isDragging, isWidgetVisible, handleToggleWidget]
+  );
 
   return (
     <div
@@ -273,9 +306,21 @@ function App() {
   );
 }
 
-const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef, isSubmitting, submitStatus, isExpanded, onToggleExpand }) => {
+const Widget = ({
+  note,
+  handleNoteChange,
+  handleSend,
+  handleClose,
+  onToggle,
+  isAnimating,
+  textareaRef,
+  isSubmitting,
+  submitStatus,
+  isExpanded,
+  onToggleExpand,
+}) => {
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       if (!e.shiftKey) {
         e.preventDefault(); // Prevent newline when pressing Enter alone
         if (e.metaKey || e.ctrlKey) {
@@ -291,8 +336,15 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
   };
 
   return (
-    <div id="widget" className={`${isAnimating ? 'shrink-out' : 'expand-in'} ${isExpanded ? 'expanded' : ''}`}>
-      <button id="close-app" onClick={handleClose} disabled={isSubmitting}>x</button>
+    <div
+      id="widget"
+      className={`${isAnimating ? "shrink-out" : "expand-in"} ${
+        isExpanded ? "expanded" : ""
+      }`}
+    >
+      <button id="close-app" onClick={handleClose} disabled={isSubmitting}>
+        x
+      </button>
       <div id="widget-content">
         <div className="input-container">
           <textarea
@@ -303,7 +355,7 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
             onChange={handleNoteChange}
             onKeyDown={handleKeyDown}
             disabled={isSubmitting}
-            style={{ minHeight: isExpanded ? '300px' : '120px' }}
+            style={{ minHeight: isExpanded ? "300px" : "120px" }}
           />
           <div className="button-row">
             {submitStatus.message && (
@@ -311,19 +363,19 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
                 <span>{submitStatus.message}</span>
               </div>
             )}
-            <button 
+            <button
               className="material-icons expand-btn"
               onClick={onToggleExpand}
-              aria-label={isExpanded ? 'Collapse' : 'Expand'}
-              title={isExpanded ? 'Collapse' : 'Expand'}
+              aria-label={isExpanded ? "Collapse" : "Expand"}
+              title={isExpanded ? "Collapse" : "Expand"}
             >
-              {isExpanded ? 'fullscreen_exit' : 'fullscreen'}
+              {isExpanded ? "fullscreen_exit" : "fullscreen"}
             </button>
-            <button 
-              id="send-btn" 
-              onClick={handleSend} 
+            <button
+              id="send-btn"
+              onClick={handleSend}
               disabled={!note.trim() || isSubmitting}
-              className={isSubmitting ? 'sending' : ''}
+              className={isSubmitting ? "sending" : ""}
             >
               {isSubmitting ? (
                 <div className="spinner"></div>
