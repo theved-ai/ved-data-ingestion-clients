@@ -137,11 +137,6 @@ body {
   box-sizing: border-box;
 }
 
-#note-input:focus {
-  background: #ffffff;
-  box-shadow: 0 0 0 2px #2270f8;
-}
-
 #widget.expanded #note-input {
   min-height: 300px;
 }
@@ -272,7 +267,7 @@ body {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  -webkit-font-feature-settings: 'liga';
+  -webkit-font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -402,8 +397,8 @@ textarea:disabled {
 
 #close-app {
   position: absolute;
-  top: 8px;
-  right: 14px;
+  top: -2px;
+  right: 3px;
   background: transparent;
   border: none;
   font-size: 20px;
@@ -411,6 +406,7 @@ textarea:disabled {
   cursor: pointer;
   transition: color 0.2s;
   display: block;
+  z-index: 100;
 }
 
 #close-app:hover {
