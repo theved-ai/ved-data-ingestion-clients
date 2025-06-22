@@ -7,6 +7,7 @@ function App() {
   const textareaRef = useRef(null);
   const [isWidgetVisible, setIsWidgetVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [note, setNote] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
@@ -290,12 +291,15 @@ function App() {
     }
   }, [isWidgetVisible, position]);
 
-  // Handle window resize when toggling between widget and orb
+  // Handle window resize when toggling between widget and orb or expanding
   useEffect(() => {
     if (isWidgetVisible) {
       // When showing widget, ensure it's fully visible on screen
-      const maxX = screenSize.width - 360; // Widget width
-      const maxY = screenSize.height - 200; // Widget height
+      const widgetWidth = isExpanded ? 500 : 360;
+      const widgetHeight = isExpanded ? 400 : 200;
+      
+      const maxX = screenSize.width - widgetWidth;
+      const maxY = screenSize.height - widgetHeight;
       
       const newX = Math.min(Math.max(0, position.x), maxX);
       const newY = Math.min(Math.max(0, position.y), maxY);
@@ -306,8 +310,8 @@ function App() {
       }
       
       window.electron.send('set-window', { 
-        width: 360, 
-        height: 200,
+        width: widgetWidth, 
+        height: widgetHeight,
         x: newX,
         y: newY,
         animate: true 
@@ -328,7 +332,7 @@ function App() {
         animate: true 
       });
     }
-  }, [isWidgetVisible, position, screenSize]);
+  }, [isWidgetVisible, isExpanded, position, screenSize]);
   
   // Clean up on unmount
   useEffect(() => {
@@ -366,6 +370,8 @@ function App() {
           textareaRef={textareaRef}
           isSubmitting={isSubmitting}
           submitStatus={submitStatus}
+          isExpanded={isExpanded}
+          onToggleExpand={() => setIsExpanded(!isExpanded)}
         />
       ) : (
         <Orb handleClose={handleClose} isAnimating={isAnimating} />
@@ -374,7 +380,7 @@ function App() {
   );
 }
 
-const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef, isSubmitting, submitStatus }) => {
+const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isAnimating, textareaRef, isSubmitting, submitStatus, isExpanded, onToggleExpand }) => {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       if (!e.shiftKey) {
@@ -392,7 +398,7 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
   };
 
   return (
-    <div id="widget" className={isAnimating ? 'shrink-out' : 'expand-in'}>
+    <div id="widget" className={`${isAnimating ? 'shrink-out' : 'expand-in'} ${isExpanded ? 'expanded' : ''}`}>
       <button id="close-app" onClick={handleClose} disabled={isSubmitting}>x</button>
       <div id="widget-content">
         <div className="input-container">
@@ -404,6 +410,7 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
             onChange={handleNoteChange}
             onKeyDown={handleKeyDown}
             disabled={isSubmitting}
+            style={{ minHeight: isExpanded ? '300px' : '120px' }}
           />
           <div className="button-row">
             {submitStatus.message && (
@@ -411,6 +418,14 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
                 <span>{submitStatus.message}</span>
               </div>
             )}
+            <button 
+              className="material-icons expand-btn"
+              onClick={onToggleExpand}
+              aria-label={isExpanded ? 'Collapse' : 'Expand'}
+              title={isExpanded ? 'Collapse' : 'Expand'}
+            >
+              {isExpanded ? 'fullscreen_exit' : 'fullscreen'}
+            </button>
             <button 
               id="send-btn" 
               onClick={handleSend} 
@@ -420,7 +435,7 @@ const Widget = ({ note, handleNoteChange, handleSend, handleClose, onToggle, isA
               {isSubmitting ? (
                 <div className="spinner"></div>
               ) : (
-               <img src="../src/assets/forward-arrow.svg" alt="" />
+                <img src="../src/assets/forward-arrow.svg" alt="Send" />
               )}
             </button>
           </div>
